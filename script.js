@@ -9,9 +9,12 @@ const colorsNum = 3;
 let colorsList = ["red", "blue", "yellow", "orange", "green", "violet", "white", "rainbow", "black" ];
 let rainbowPalette = "";
 let currentColor = "red";
+let draw = false;
+let erase = false;
+
 /**
  * Shifting RGB code.
- * Originated from gn-venpy, slightly modified to pick a specific reference
+ * Originated from gn-venpy on Github, slightly modified to pick a specific reference
  * Source: www.github.com/gn-venpy/rainbow-html-background/blob/main/index.html
  */
 let r =255;
@@ -39,7 +42,7 @@ function colorShiftTimer() {
     rainbowPalette.style.backgroundColor = rgb(r,g,b);
 }
 
-
+//Create the color choice palette
 function createPalette(cells) {
     let sides = colorsPad/cells;
     for(let i=0; i<cells; i++) {
@@ -61,7 +64,7 @@ function createPalette(cells) {
         }
     }
 }
-
+//Draws empty grid that can take color assignment
 function createPad(cells) {
     let sides = maxPad/cells;
     for(let i=0; i<cells; i++) {
@@ -79,55 +82,19 @@ function createPad(cells) {
     }
 }
 function removePad() {
-    //Find all elements that contain the row OR column class
+    //Find all elements that contain the pad's row OR column class
     // Then remove them one by one
     document.querySelectorAll('.row,.column')
-        .forEach(elem =>
-        elem.remove()
-        );
+        .forEach(elem =>elem.remove());
 }
-let draw = true;
-let erase = false;
-document.addEventListener('keypress', (e) => {
-    console.log(e);
-    if(e.key === 'b') {
-        
-        draw = draw ? false : true;
-        erase = false;
-    }
-    if(e.key === 'e' ) {
-        erase = erase ? false : true;
-        draw = false;
-    }
-    
-})
-document.addEventListener('mousemove', e => {
-    //Grab current mouse location
-    const div = document.elementFromPoint(e.clientX, e.clientY);
-    if(div.classList.contains('column') && draw) {
-        div.setAttribute('style', `background: ${currentColor}`)
-    } else if(div.classList.contains('column') && erase) {
-        div.setAttribute('style', 'background: white')
-    }
-    
-
-}, {passive:true});
-
-palette.addEventListener('click', e => {
-    console.log(e);
-    const div = document.elementFromPoint(e.clientX, e.clientY);
-    if(div.classList.contains('colors-column')) {
-            currentColor = getComputedStyle(div).backgroundColor;
-    }
-});
 //Delete old pad, create new pad using current max rows and columns
 function resetPad() {
     removePad();
     let cells = prompt("Enter number of rows and cells");
     if(cells <=1) {
         alert("Minimum cells is 2x2")
-        cells =2;
-    } else if(cells >=100) {
+        cells = 2;
+    } else if(cells >100) {
         alert("Max cell size is 100x100");
         cells = 100;
     }
@@ -135,7 +102,49 @@ function resetPad() {
     
 }
 
+
+//Event listeners
+
+//Toggle Brush functionality
+document.addEventListener('keypress', (e) => {
+    console.log(e);
+    if(e.key === 'b') {   
+        draw = draw ? false : true;
+        erase = false;
+    }
+    if(e.key === 'e' ) {
+        erase = erase ? false : true;
+        draw = false;
+    }    
+});
+
+//Paint where mouse is looking, if valid
+pad.addEventListener('mousemove', e => {
+    //Grab current mouse location
+    const div = document.elementFromPoint(e.clientX, e.clientY);
+    if(div.classList.contains('column') && draw) {
+        //Brush is active
+        div.setAttribute('style', `background: ${currentColor}`)
+    } else if(div.classList.contains('column') && erase) {
+        //Erase is active
+        div.setAttribute('style', 'background: white')
+    }
+}, {passive:true});
+
+//Looks for click event on the color picker, grabs color
+palette.addEventListener('click', e => {
+    console.log(e);
+    const div = document.elementFromPoint(e.clientX, e.clientY);
+    if(div.classList.contains('colors-column')) {
+            currentColor = getComputedStyle(div).backgroundColor;
+    }
+});
+
+//Button event listener to reset pad
 resetButton.addEventListener('click', resetPad);
+
+
+
 createPalette(colorsNum);
 setInterval(colorShiftTimer, 10);
 createPad(maxCells);
