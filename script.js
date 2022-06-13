@@ -11,7 +11,8 @@ let rainbowPalette = "";
 let currentColor = "red";
 let draw = false;
 let erase = false;
-
+let setRainbow =false;
+let prevSquare = null;
 /**
  * Shifting RGB code.
  * Originated from gn-venpy on Github, slightly modified to pick a specific reference
@@ -56,6 +57,7 @@ function createPalette(cells) {
             square.classList.add('colors-column');
             let color = colorsList.shift();
             if(color == "rainbow") {
+                square.id = "rainbow";
                 rainbowPalette = square;
             } else {
                 square.style.backgroundColor=color;
@@ -101,8 +103,9 @@ function resetPad() {
     createPad(cells);
     
 }
-
-
+function randomColor() {
+    return Math.floor(Math.random()*256);
+}
 //Event listeners
 
 //Toggle Brush functionality
@@ -111,6 +114,7 @@ document.addEventListener('keypress', (e) => {
     if(e.key === 'b') {   
         draw = draw ? false : true;
         erase = false;
+        prevSquare = null;
     }
     if(e.key === 'e' ) {
         erase = erase ? false : true;
@@ -119,12 +123,26 @@ document.addEventListener('keypress', (e) => {
 });
 
 //Paint where mouse is looking, if valid
+
 pad.addEventListener('mousemove', e => {
     //Grab current mouse location
     const div = document.elementFromPoint(e.clientX, e.clientY);
+
+    //Check if null, or the brush location hasn't changed
+    if(prevSquare == null) {
+        prevSquare = div;
+    } else if(prevSquare == div) {
+        return;
+    }
+    prevSquare = div;
     if(div.classList.contains('column') && draw) {
         //Brush is active
-        div.setAttribute('style', `background: ${currentColor}`)
+        if(setRainbow) {
+            div.style.backgroundColor=`rgb(${randomColor()}, ${randomColor()}, ${randomColor()}) `;
+            
+        } else {
+            div.setAttribute('style', `background: ${currentColor}`)
+        }
     } else if(div.classList.contains('column') && erase) {
         //Erase is active
         div.setAttribute('style', 'background: white')
@@ -135,9 +153,11 @@ pad.addEventListener('mousemove', e => {
 palette.addEventListener('click', e => {
     console.log(e);
     const div = document.elementFromPoint(e.clientX, e.clientY);
-    if(div.classList.contains('colors-column')) {
+    if(div.id=='rainbow') {
+        setRainbow=true;
+    } else if(div.classList.contains('colors-column')) {
             currentColor = getComputedStyle(div).backgroundColor;
-    }
+    } 
 });
 
 //Button event listener to reset pad
