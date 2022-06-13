@@ -1,0 +1,48 @@
+.main {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#pad{ 
+    min-height: 800px;
+    min-width: 800px;
+    max-width: 800px;
+    max-height: 800px;
+    border: 2px solid black;
+    justify-self: right;
+}
+
+.row {
+ 
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: no-wrap;
+
+}
+.column {
+    flex-basis: 100%;
+    border:1px solid rgba(88, 88, 88, 0.658);
+
+}
+.on-hover {
+    background-color: rgba(255, 0, 0, 0.24);
+}
+#palette {
+    min-height: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    max-height: 90px;
+    border: 2px solid black;
+}
+.colors-row {
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: no-wrap;
+}
+.colors-column {
+    flex-basis: 100%;
+    border: 1px solid black;
+}
+
