@@ -213,13 +213,18 @@ function resetPad() {
     removePad();
     resetButton.classList.add('.button-on');
     let cells = prompt("Enter number of rows and cells");
-    if(cells <=1) {
-        alert("Minimum cells is 2x2")
-        cells = 2;
-    } else if(cells >100) {
-        alert("Max cell size is 100x100");
-        cells = 100;
+    if(Number.isInteger(cells)) {
+        if(cells <=1) {
+            alert("Minimum cells is 2x2")
+            cells = 2;
+        } else if(cells >100) {
+            alert("Max cell size is 100x100");
+            cells = 100;
+        }
+    } else {
+        alert("Only numbers 1-100 allowed");
     }
+    
     createPad(cells);
     resetButton.classList.remove('.button-on');
 }
