@@ -1,18 +1,34 @@
+const buttons = document.querySelectorAll('.button');
 const header = document.querySelector('.header');
 const pad = document.querySelector('#pad');
 const palette = document.querySelector('#palette');
 const resetButton = document.querySelector('#reset');
+const brushButton = document.querySelector('#brush');
+const eraserButton = document.querySelector('#eraser');
+const toggleGridButton = document.querySelector('#gridlines');
+
 let maxCells = 16;
-const maxPad = 800;
+const maxPad = 640;
 const colorsPad = 90;
 const colorsNum = 3;
-let colorsList = ["red", "blue", "yellow", "orange", "green", "violet", "white", "rainbow", "black" ];
+const colorsList = [
+[255, 0, 0, 0.1], //red
+[0, 0, 255, 0.1], //blue,
+[255, 255, 0, 0,1], //yellow
+[255, 165, 0, 0.1], //orange
+[0, 255, 0, 0.1],    //green
+[128, 0, 128, 0.1], //Purple
+[255, 255, 255, 0.1], //white
+"rainbow",
+[0, 0, 0, 0.1]  //black
+];
 let rainbowPalette = "";
-let currentColor = "red";
+let currentColor = "white";
 let draw = false;
 let erase = false;
 let setRainbow =false;
 let prevSquare = null;
+let grid = true;
 /**
  * Shifting RGB code.
  * Originated from gn-venpy on Github, slightly modified to pick a specific reference
@@ -43,6 +59,105 @@ function colorShiftTimer() {
     rainbowPalette.style.backgroundColor = rgb(r,g,b);
 }
 
+//Turns the pad's grid on and off
+function toggleGrid() {
+    if(grid) {
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.add('no-grid'));
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.remove('add-grid'));
+        grid = false;
+        toggleGridButton.classList.add('button-on');
+    } else {
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.add('add-grid'));
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.remove('no-grid'));
+        grid = true;
+        toggleGridButton.classList.remove('button-on');
+    }
+}
+
+function updateBrushButton() {
+    draw = draw ? false : true;
+    erase = false;
+    prevSquare = null;
+    if(draw) {
+        eraserButton.classList.remove('button-on');
+        brushButton.classList.add('button-on');
+    } else {
+        brushButton.classList.remove('button-on');
+    }
+    
+}
+
+function updateEraseButton() {
+    erase = erase ? false : true;
+    draw = false;
+    
+    if(erase) {
+        eraserButton.classList.add('button-on');
+        brushButton.classList.remove('button-on');
+    } else {
+        eraserButton.classList.remove('button-on');
+    }
+}
+//checks current grid setting
+function gridSetting() {
+    if(grid) {
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.add('add-grid'));
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.remove('no-grid'));
+        grid = true;
+        toggleGridButton.classList.remove('button-on');
+    } else {
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.add('no-grid'));
+        document.querySelectorAll('.column')
+        .forEach(elem =>elem.classList.remove('add-grid'));
+        grid = false;
+        toggleGridButton.classList.add('button-on');
+    }
+}
+
+function setOpacity(rgb) {
+    let rgbaVal = getRGBFloats(rgb);
+    rgbaVal[3] =0.1;
+    return("rgba(" + rgbaVal.toString() + ")");
+    
+}
+function addOpacity(rgb) {
+
+    //Normalize opacity to at most 1
+    if(rgb[3] < 1) {
+        rgb[3] +=0.1;
+    } else {
+        rgb[3] = 1;
+    }
+    return("rgba(" + rgb.toString() + ")");
+
+}
+function mixColor(newColor, oldColor) {
+
+    let mixColor = getRGBFloats(newColor);
+    oldColor = getRGBFloats(oldColor);
+    for(let i = 0; i<3; i++) {
+        oldColor[i] += mixColor[i]*.10;
+        if(oldColor[i] > 255) {
+            oldColor[i]=255;
+        }
+    }
+    return oldColor;
+}
+
+//Turn the RGB strings into float arrays
+function getRGBFloats(rgb) {
+    let start = rgb.indexOf("(");
+    return rgbaVal = rgb.slice(start+1,-1).split(',').map(stringVals => {
+        return(parseFloat(stringVals, 10));
+    });
+}
 //Create the color choice palette
 function createPalette(cells) {
     let sides = colorsPad/cells;
@@ -60,12 +175,13 @@ function createPalette(cells) {
                 square.id = "rainbow";
                 rainbowPalette = square;
             } else {
-                square.style.backgroundColor=color;
+                square.style.backgroundColor=`rgba(${color[0]}, ${color[1]}, ${color[2]}, 1 )`;
             }
             row.appendChild(square);
         }
     }
 }
+
 //Draws empty grid that can take color assignment
 function createPad(cells) {
     let sides = maxPad/cells;
@@ -82,16 +198,20 @@ function createPad(cells) {
             row.appendChild(square);
         }
     }
+        gridSetting();
 }
+
 function removePad() {
     //Find all elements that contain the pad's row OR column class
     // Then remove them one by one
     document.querySelectorAll('.row,.column')
         .forEach(elem =>elem.remove());
 }
+
 //Delete old pad, create new pad using current max rows and columns
 function resetPad() {
     removePad();
+    resetButton.classList.add('.button-on');
     let cells = prompt("Enter number of rows and cells");
     if(cells <=1) {
         alert("Minimum cells is 2x2")
@@ -101,25 +221,45 @@ function resetPad() {
         cells = 100;
     }
     createPad(cells);
-    
+    resetButton.classList.remove('.button-on');
 }
+
 function randomColor() {
     return Math.floor(Math.random()*256);
 }
+
 //Event listeners
 
-//Toggle Brush functionality
-document.addEventListener('keypress', (e) => {
+//Toggle Brush/Erase/Grid functionality on keypresses
+document.addEventListener('keypress', e => {
     console.log(e);
     if(e.key === 'b') {   
+        
         draw = draw ? false : true;
         erase = false;
         prevSquare = null;
+        if(draw) {
+            eraserButton.classList.remove('button-on');
+            brushButton.classList.add('button-on');
+        } else {
+            brushButton.classList.remove('button-on');
+        }
     }
     if(e.key === 'e' ) {
+
         erase = erase ? false : true;
         draw = false;
+        
+        if(erase) {
+            eraserButton.classList.add('button-on');
+            brushButton.classList.remove('button-on');
+        } else {
+            eraserButton.classList.remove('button-on');
+        }
     }    
+    if(e.key==='g') {
+        toggleGrid();
+    }
 });
 
 //Paint where mouse is looking, if valid
@@ -137,15 +277,22 @@ pad.addEventListener('mousemove', e => {
     prevSquare = div;
     if(div.classList.contains('column') && draw) {
         //Brush is active
+        
         if(setRainbow) {
-            div.style.backgroundColor=`rgb(${randomColor()}, ${randomColor()}, ${randomColor()}) `;
-            
+            if(!div.style.backgroundColor || div.style.backgroundColor=='white') {
+                div.style.backgroundColor = `rgba(${randomColor()}, ${randomColor()}, ${randomColor()},`+.1+`)`;
+            }
+            div.style.backgroundColor = addOpacity(mixColor(`rgba(${randomColor()}, ${randomColor()}, ${randomColor()},`+.1+`)`, getComputedStyle(div).backgroundColor)); 
         } else {
-            div.setAttribute('style', `background: ${currentColor}`)
+            if(!div.style.backgroundColor || div.style.backgroundColor=='white') {
+                div.style.backgroundColor = currentColor;
+            } else {
+                div.style.backgroundColor = addOpacity(mixColor(currentColor, getComputedStyle(div).backgroundColor));
+            }         
         }
     } else if(div.classList.contains('column') && erase) {
         //Erase is active
-        div.setAttribute('style', 'background: white')
+        div.style.backgroundColor='white';
     }
 }, {passive:true});
 
@@ -156,17 +303,17 @@ palette.addEventListener('click', e => {
     if(div.id=='rainbow') {
         setRainbow=true;
     } else if(div.classList.contains('colors-column')) {
-            currentColor = getComputedStyle(div).backgroundColor;
+            currentColor = setOpacity(getComputedStyle(div).backgroundColor);
     } 
 });
-
-//Button event listener to reset pad
 resetButton.addEventListener('click', resetPad);
-
-
+brushButton.addEventListener('click', updateBrushButton);
+eraserButton.addEventListener('click', updateEraseButton);
+toggleGridButton.addEventListener('click', toggleGrid);
 
 createPalette(colorsNum);
 setInterval(colorShiftTimer, 10);
 createPad(maxCells);
 
+    
 

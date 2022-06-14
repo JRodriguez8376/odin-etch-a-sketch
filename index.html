@@ -5,12 +5,32 @@
         <title>Etch-a-Sketch</title>
         <link rel="stylesheet" href="./styles.css">
         <script src="./script.js" defer></script>
+        <script src="https://kit.fontawesome.com/a3d9652060.js" crossorigin="anonymous"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Fascinate&display=swap" rel="stylesheet">
+        
     </head>
     <body>
         <div class ="header">
-            <button id="reset">Reset</button>
+                <h1>Etch-a Sketch</h1>
+            <div class= "header-controls">
+                <button class ="button" id="reset">
+                    <i class="fa-solid fa-arrows-rotate fa-2x"></i>
+                </button>
+                <button class ="button" id="brush">
+                    <i class="fa-solid fa-paintbrush fa-2x"></i>
+                </button>
+                <button class ="button" id="eraser">
+                    <i class="fa-solid fa-eraser fa-2x"></i>
+                </button>
+                <button class ="button" id="gridlines">
+                    <i class="fa-solid fa-border-top-left fa-2x"></i>
+                </button>
+            </div>       
         </div>
-        <p>Hover over grid to draw, B to toggle paint, E to erase, left click on the small grid to select a color</p>
+        
+        
         <div class="main">
             
             <div id="palette"></div>
